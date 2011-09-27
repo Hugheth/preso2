@@ -1,0 +1,64 @@
+tags: excludeLists excludeSearch preso2package
+type: text/css
+
+* {
+	-webkit-transform-origin: 0 0;
+	-moz-transform-origin: 0 0;
+	-o-transform-origin: 0 0;
+	-ms-transform-origin: 0 0;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	width:100%;
+	height:100%;
+}
+
+html.noScroll {
+	overflow:hidden;
+}
+
+body {
+	-webkit-transform-origin: 50% 50%;
+	-moz-transform-origin: 50% 50%;
+	-o-transform-origin: 50% 50%;    
+	-ms-transform-origin: 50% 50%;    
+}
+
+html {
+	background: #fff;
+	height: 100%;
+	font-family: helvetica, arial;
+}
+
+body {
+	background: url(back.png);
+	width: 100%;
+	height: 100%;
+}
+
+#display {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.tiddler {
+	position: absolute;
+	width: 500px;
+	word-wrap: break-word;
+}
+.tiddler .content {
+	background: #fff;
+	-webkit-border-radius: 8px;
+	padding: 10px;
+}
+.tiddler .heading h1 {
+	display: inline-block;
+	margin: 0 0 10px 0;
+	font-size: 24px;
+	color: #333;
+	cursor: move;
+}
