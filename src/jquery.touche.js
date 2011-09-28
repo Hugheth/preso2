@@ -100,7 +100,7 @@
 			
 			if (!trace) return;
  
-			// Trigger the start event on the body for anyone who's listening to the trace
+ // Trigger the start event on the body for anyone who's listening to the trace
 			$('body').trigger('tracestart-' + trace.id);
 		}
 	};
@@ -114,8 +114,8 @@
 			var trace = $.touche.traces[touch.identifier];
 			
 			if (!trace) return;
-
-			// Update information about the trace
+ 
+ // Update information about the trace
 			trace.x = touch.pageX;
 			trace.y = touch.pageY;
 			trace.max_dx = Math.max(touch.pageX - trace.sx, trace.dx);
@@ -126,7 +126,7 @@
 			// Current event
 			trace.currentEvent = e;
 			trace.currentTouch = touch;
-
+			
 			// Trigger the move event on the body for anyone who's listening to the trace
 			$('body').trigger('tracemove-' + trace.id);
 		}
@@ -141,43 +141,43 @@
 			var trace = $.touche.traces[touch.identifier];
 			
 			if (!trace) return;
-
-			// Current event
+ 
+ // Current event
 			trace.currentEvent = e;
 			trace.currentTouch = touch;
- 
+			
 			// Trigger the end event on the body for anyone who's listening to the trace
 			$('body').trigger('traceend-' + trace.id);
 			
 			// Check for click
 			if (trace.max_dx == 0 && trace.max_dy == 0) $('body').trigger('traceclick-' + trace.id);
-			
-			$.touche.removeTrace(trace);
+ 
+ $.touche.removeTrace(trace);
 		}
 	};
 	$.touche.mouseDownBody = function( e ) {
 		
 		// Check for left click only
 		if (e.button != 0) return;
-		
-		var trace = $.touche.traces[-1];
-		
-		if (!trace) return;
  
-		// Add mousemove and mouseup listeners
-		$('body').bind('mousemove', $.touche.mouseMoveBody);
-		$('body').bind('mouseup', $.touche.mouseUpBody);
-		
-		// Trigger the start event on the body for anyone who's listening to the trace
-		$('body').trigger('tracestart--1');
+ var trace = $.touche.traces[-1];
+ 
+ if (!trace) return;
+ 
+ // Add mousemove and mouseup listeners
+ $('body').bind('mousemove', $.touche.mouseMoveBody);
+ $('body').bind('mouseup', $.touche.mouseUpBody);
+ 
+ // Trigger the start event on the body for anyone who's listening to the trace
+ $('body').trigger('tracestart--1');
 	};
 	$.touche.mouseMoveBody = function( e ) {
 		
 		var trace = $.touche.traces[-1];
 		
 		if (!trace) return;
- 
-		// Update information about the trace
+				   
+				   // Update information about the trace
 		trace.x = e.pageX;
 		trace.y = e.pageY;
 		trace.max_dx = Math.max(e.pageX - trace.sx, trace.dx);
@@ -198,11 +198,11 @@
 		var trace = $.touche.traces[-1];
 		
 		if (!trace) return;
- 
-		// Current event
+				   
+				   // Current event
 		trace.currentEvent = e;
 		trace.currentTouch = null;
- 
+		
 		// Trigger the end event on the body for anyone who's listening to the trace
 		$('body').trigger('traceend--1');
 		
@@ -210,12 +210,12 @@
 		
 		// Check for click
 		if (trace.max_dx == 0 && trace.max_dy == 0) $('body').trigger('traceclick--1');
-		
-		// Unbind mouse event listeners on body as they are not needed
+				   
+				   // Unbind mouse event listeners on body as they are not needed
 		$('body').unbind('mousemove', $.touche.mouseMoveBody);
 		$('body').unbind('mouseup', $.touche.mouseUpBody);
 	};
-
+	
 	$.touche.init = function() {
 		
 		// Bind the static touch listeners to touch and mouse events on the body
@@ -242,7 +242,7 @@
 			for (var i in data.traces) {
 				
 				if (data.traces[i].id == trace.id) {
-				
+					
 					existed = true;
 					break;
 				};
@@ -250,16 +250,16 @@
 			
 			// Add the trace to the touches array in data
 			if (!existed) {
-			
+				
 				// Call the after event on the element, if there are touches
 				if (data.traces.length) data.after.apply(element, [data]);
- 
-				data.traces.push(trace);
+				   
+				   data.traces.push(trace);
 				
 				// Increment count
-				data.count++;
+				   data.count++;
 			}
-						
+			
 			// Call the start event on the element
 			data.start.apply(element, [data, trace]);
 			
@@ -297,8 +297,8 @@
 			
 			// Call the before event on the element
 			if (data.traces.length && existed) data.before.apply(element, [data]);
-			
-			// Unbind the element from specific trace events
+				   
+				   // Unbind the element from specific trace events
 			$('body').unbind('tracestart-' + trace.id, tracestart);
 			$('body').unbind('tracemove-' + trace.id, tracemove);
 			$('body').unbind('traceend-' + trace.id, traceend);
@@ -343,19 +343,19 @@
 				// Create a new trace
 				trace = {
 					id: touch.identifier,
-					sx: touch.pageX,
-					sy: touch.pageY,
-					x: touch.pageX,
-					y: touch.pageY,
-					dx: 0,
-					dy: 0,
-					max_dx: 0,
-					max_dy: 0,
-					visible: touche.propagate,
-					originalEvent: e,
-					currentEvent: e,
-					currentTouch: touch,
-					target: e.currentTarget
+				   sx: touch.pageX,
+				   sy: touch.pageY,
+				   x: touch.pageX,
+				   y: touch.pageY,
+				   dx: 0,
+				   dy: 0,
+				   max_dx: 0,
+				   max_dy: 0,
+				   visible: touche.propagate,
+				   originalEvent: e,
+				   currentEvent: e,
+				   currentTouch: touch,
+				   target: e.currentTarget
 				};
 				
 				// Add the trace
@@ -373,50 +373,50 @@
 	};
 	// mousedown allows backwards-compatibility for mouse-driven input
 	$.touche.mouseDownElement = function( e ) {
-			
+		
 		// Check for left click only
 		if (e.button != 0) return;
-		
-		var t = $(this);
+				   
+				   var t = $(this);
 		
 		// Get the touche data for this element
-		var touche = e.data;
-		
-		var trace = $.touche.traces[-1];
-		
-		// Check whether the trace has already been created by a handler
-		// of an element that is displaying above the element of this handler.
-		if (!trace) {
-			
-			// Create a new trace
-			trace = {
-				id: -1,
-				sx: e.pageX,
-				sy: e.pageY,
-				x: e.pageX,
-				y: e.pageY,
-				dx: 0,
-				dy: 0,
-				max_dx: 0,
-				max_dy: 0,
-				visible: touche.propagate,
-				originalEvent: e,
-				currentEvent: e,
-				currentTouch: null,
-				target: e.currentTarget
-			};
-			
-			// Add the trace
-			$.touche.addTrace(trace);
-			
-		} else {
-			
-			// If the trace does exist, check that it is visible
-			if (!trace.visible) return;
-		}
-	
-		// Apply the trace to the element
-		$.touche.applyTraceToElement(trace, t, touche);
+				   var touche = e.data;
+				   
+				   var trace = $.touche.traces[-1];
+				   
+				   // Check whether the trace has already been created by a handler
+				   // of an element that is displaying above the element of this handler.
+				   if (!trace) {
+					   
+					   // Create a new trace
+					   trace = {
+						   id: -1,
+				   sx: e.pageX,
+				   sy: e.pageY,
+				   x: e.pageX,
+				   y: e.pageY,
+				   dx: 0,
+				   dy: 0,
+				   max_dx: 0,
+				   max_dy: 0,
+				   visible: touche.propagate,
+				   originalEvent: e,
+				   currentEvent: e,
+				   currentTouch: null,
+				   target: e.currentTarget
+					   };
+					   
+					   // Add the trace
+					   $.touche.addTrace(trace);
+					   
+				   } else {
+					   
+					   // If the trace does exist, check that it is visible
+					   if (!trace.visible) return;
+				   }
+				   
+				   // Apply the trace to the element
+				   $.touche.applyTraceToElement(trace, t, touche);
 	};
 	
 	// The touch function is called on a jQuery object
@@ -433,28 +433,28 @@
 		
 		// Extend the options object with the default options
 		for (var i in $.touche.options)
-			if (!options[i]) options[i] = $.touche.options[i];
-		
-		// Bind the touchstart and mousedown listeners
-		this.bind('touchstart', options, $.touche.touchStartElement);
+			if (options[i] === undefined) options[i] = $.touche.options[i];
+				   
+				   // Bind the touchstart and mousedown listeners
+			this.bind('touchstart', options, $.touche.touchStartElement);
 		this.bind('mousedown', options, $.touche.mouseDownElement);
 		
 		// Return the element to allow for function chaining
 		return this;
 	};
-
+	
 	// Default options
 	$.touche.options = {
 		traces: [],
-		count: 0,
-		start: $.noop,
-		end: $.noop,
-		click: $.noop,
-		move: $.noop,
-		after: $.noop,
-		before: $.noop,
-		propagate: true,
-		clone: true
+   count: 0,
+   start: $.noop,
+   end: $.noop,
+   click: $.noop,
+   move: $.noop,
+   after: $.noop,
+   before: $.noop,
+   propagate: true,
+   clone: true
 	};
 	
 })(jQuery);
