@@ -39,21 +39,31 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 				
 				var n = 0;
 				
-				// TODO: Change to internal links when Twikifier recognizes them
-				var links = $(tiddler.render).find('a').each(function() {
+				if (tiddler) {
+				
+					// TODO: Change to internal links when Twikifier recognizes them
+					var links = $(tiddler.render).find('a').each(function() {
+						
+						var link = cecily.tiddlerFromAnchor($(this));
+						
+						if (!ok) {
+							cecily.mapData[link] = [n * 50 + 2500, n * 50 + 2500, 260, 500];
+							n++;
+						}
+						
+						if (link) {
+							cecily.defaultTiddlers.push(link);
+							cecily.showTiddler(link);
+						}
+					});
 					
-					var link = cecily.tiddlerFromAnchor($(this));
+				} else {
 					
-					if (!ok) {
-						cecily.mapData[link] = [n * 50 + 2500, n * 50 + 2500, 260, 500];
-						n++;
-					}
-					
-					if (link) {
-						cecily.defaultTiddlers.push(link);
-						cecily.showTiddler(link);
-					}
-				});
+					cecily.defaultTiddlers.push('GettingStarted');
+					cecily.mapData['GettingStarted'] = [2550, 2550, 260, 500];
+					cecily.showTiddler('GettingStarted');
+				}
+				
 			});
 		});
 		
