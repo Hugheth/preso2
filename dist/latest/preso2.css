@@ -1,6 +1,3 @@
-tags: excludeLists excludeSearch preso2package
-type: text/css
-
 * {
 	-webkit-transform-origin: 0 0;
 	-moz-transform-origin: 0 0;
@@ -24,9 +21,7 @@ body {
 	-moz-transform-origin: 50% 50%;
 	-o-transform-origin: 50% 50%;    
 	-ms-transform-origin: 50% 50%;    
-}
-
-html {
+}html {
 	height: 100%;
 	font-family: helvetica, arial;
 	background: #eff;
