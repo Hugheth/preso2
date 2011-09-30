@@ -1422,16 +1422,19 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 		store: null,			// The chrjs-store store object
 		map: null,				// The title of the current map tiddler
 		mapData: null,			// An object containing the positions and sizes of tiddlers in the map
-		zooming: false,			// Currently zooming to a tiddler or to multiple tiddlers
+		zooming: 0,				// Currently zooming to a tiddler or to multiple tiddlers
 		scale: 1.0,				// The current scale of the display
 		zoomTrace: [],			// A list of previously visited tiddlers
 		currentTiddler: null,	// The currently zoomed tiddler,
-		defaultTiddlers: [],	// A list of default tiddlers
+		defaultTiddlers: null,	// A list of default tiddlers
 		defaultWidth: 260		// Default width of a tiddler
 	};
 	
 	// Initialise cecily
 	cecily.init = function() {
+		
+		// Set host
+		cecily.host = document.location.host;
 		
 		cecily.display = $('#display');
 		
@@ -1440,32 +1443,31 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 			
 			if (!ok) cecily.mapData = {};
 					  
-					  // Load the default tiddlers
+			// Load the default tiddlers
 			cecily.loadTiddler('DefaultTiddlers', function( tiddler ) {
 				
 				var n = 0;
 				
 				if (tiddler) {
 				
-					// TODO: Change to internal links when Twikifier recognizes them
-					var links = $(tiddler.render).find('a').each(function() {
-						
-						var link = cecily.tiddlerFromAnchor($(this));
+					// Parse list of tiddlers from 
+					cecily.defaultTidders = cecily.tiddlersFromFilter(tiddler.text);
+					
+					for (var i in cecily.defaultTidders) {
 						
 						if (!ok) {
-							cecily.mapData[link] = [n * 50 + 2500, n * 50 + 2500, 260, 500];
+							cecily.mapData[cecily.defaultTidders[i]] = [n * 50 + 2500, n * 50 + 2500, 260, 500];
+							
+							// Increment offset so when no MyMap tiddlers display in a stack
 							n++;
 						}
 						
-						if (link) {
-							cecily.defaultTiddlers.push(link);
-							cecily.showTiddler(link);
-						}
-					});
+						cecily.showTiddler(cecily.defaultTidders[i]);
+					};
 					
 				} else {
 					
-					cecily.defaultTiddlers.push('GettingStarted');
+					cecily.defaultTiddlers = ['GettingStarted'];
 					cecily.mapData['GettingStarted'] = [2550, 2550, 260, 500];
 					cecily.showTiddler('GettingStarted');
 				}
@@ -1488,13 +1490,17 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 	// Initialise cecily on document load
 	$(function() {
 		// Set up chrjs-store
-		cecily.store = new tiddlyweb.Store(cecily.init);		
+		cecily.store = new tiddlyweb.Store(cecily.init);
 	});
 	
 	// Display actions handle dragging and zooming on the display
 	
 	// Start an action on the display
 	cecily.displayBeforeAction = function( data ) {
+		
+		// Update the display matrix and stop zooming
+		cecily.updateDisplayMatrix();
+		cecily.zooming = Math.max(0, cecily.zooming - 1);
 		
 		// Remember initial position
 		data.cssX = parseFloat(cecily.display.attr('tx')) || 0;
@@ -1857,7 +1863,7 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 				
 				var link = cecily.tiddlerFromAnchor(this);
 				
-				if (!link) return;
+				if (!link) window.open(this.attr('href'), '_blank');
 				
 				cecily.showTiddler(link, function( okay ) {
 					if (okay)
@@ -1871,6 +1877,69 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 		});
 	};
 	
+	// Filters to parse TiddlyWiki filter syntax
+	cecily.filters = {
+		
+		tiddler: function( results, match ) {
+			
+			var title = match[1] || match[4];
+
+			results.push(title);
+
+			return results;
+		},
+		
+		tag: function( results, match ) {
+			
+			var matched = cecily.store().tag(match[3]);
+			
+			for (var m = 0; m < matched.length; m++) {
+				results.push(matched[m].title);
+			}
+			return results;
+		},
+		
+		sort: function( results, match ) {
+			
+			return results.sort();
+		},
+		
+		limit: function( results, match ) {
+			
+			return results.slice(0, parseInt(match[3], 10));
+		},
+		
+		field: function( results, match ) {
+			
+			var matched = cecily.store().attr(match[2], match[3]);
+			
+			for (var m = 0; m < matched.length; m++) {
+				results.push(matched[m].title);
+			}
+			return results;
+		}
+	};
+	
+	// Resolve a set of TiddlyWiki style filter expressions for tiddlers
+	// Input text from a tiddler such as DefaultTiddlers or MainMenu and
+	// returns an array of tiddler titles.
+	cecily.tiddlersFromFilter = function( input ) {
+		
+		var re = /([^\s\[\]]+)|(?:\[([ \w\.\-]+)\[([^\]]+)\]\])|(?:\[\[([^\]]+)\]\])/mg;
+		
+		var results = [];
+		
+		var match = re.exec(input);
+		while( match ) {
+			
+			var handler = (match[1] || match[4]) ? 'tiddler' : (cecily.filters[match[2]] ? match[2] : 'field');
+			results = cecily.filters[handler].call(this, results, match);
+			match = re.exec(input);
+		}
+		
+		return results;
+	};
+	
 	// Given a jQuery object containing an anchor element, this function should
 	// return the title of the tiddler that it points to, and false if it is an
 	// external link
@@ -1881,7 +1950,7 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 		
 		if (href.split('/').length == 1) return href;
 						  
-						  // Check for in this space
+		// Check for in this space
 		if (href.substring(0, cecily.host.length) != cecily.host) return false;
 						  
 		var link = href.substring(cecily.host.length);
@@ -1896,23 +1965,19 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 	cecily.zoomToTiddler = function( title ) {
 		
 		if (cecily.zooming) return;
-						  
-		cecily.zooming = true;
 		
-		// Update scale at the end of the animation
+		cecily.zooming++;
+		
 		setTimeout(function() {
+			cecily.zooming = Math.max(0, cecily.zooming - 1);
+		}, 500);
+		
+		// Zoom to fit all tiddlers
+		if (!title) {
 			
-			cecily.updateDisplayMatrix();
-			cecily.zooming = false;
-			
-		}, 1010);
-			
-			// Zoom to fit all tiddlers
-			if (!title) {
-				
-				// Create bound rectangle to zoom
-				var bound = $('<div class="bound"/>');
-			
+			// Create bound rectangle to zoom
+			var bound = $('<div class="bound"/>');
+		
 			var bounds = cecily.boundsForTiddlers($('.tiddler'));
 			bound.css(bounds).css('position', 'absolute');
 			
@@ -1926,80 +1991,91 @@ var RESERVED_TITLES = ["cecily", "chrjs-store.js", "chrjs.js", "jquery.min.js"];
 			
 			setTimeout(function() {
 				bound.remove();
-				cecily.zooming = false;
-			}, 500);
+			});
 			
 			cecily.currentTiddler = null;
 			
 			return;
-						  }
-						  
-						  cecily.zoomTrace.push(title);
-						  
-						  var elem = $('#tiddler' + title);
-			
-			var invis = false;
-			
-			// Reshow content if hidden
-			if (!elem.children('.content:visible').length) {
-	
-	invis = true;
-	
-	// Reshow transparent so height is included in calculating zoom
-	elem.children('.content').css('opacity', 0).show();
-	
-	elem.find('.toolbarLink').fadeIn(200);
-			}
-			
-			if (cecily.currentTiddler && cecily.currentTiddler != title) {
-				
-				// Create bound rectangle to zoom
-				var bound = $('<div class="bound"/>');
-	
-	var bounds = cecily.boundsForTiddlers(elem.add('#tiddler' + cecily.currentTiddler));
-	
-	bound.css(bounds).css('position', 'absolute');
-	
-	$('#display').append(bound);
-	
-	bound.zoomTo({
-		targetsize: 1,
-		duration: 500,
-		easing: 'ease-out',
-		nativeanimation: true
-	});
-	
-	setTimeout(function() {
+		}
 		
-		// Zoom to the tiddler
-		elem.zoomTo({
-			targetsize: 0.9,
-			duration: 500,
-			easing: 'ease-in',
-			nativeanimation: true
-		});
+		cecily.zoomTrace.push(title);
 		
-		bound.remove();
+		var elem = $('#tiddler' + title);
+
+		var invis = false;
 		
-	}, 500);
-	
-			} else {
+		// Reshow content if hidden
+		if (!elem.children('.content:visible').length) {
+
+			invis = true;
+
+			// Reshow transparent so height is included in calculating zoom
+			elem.children('.content').css('opacity', 0).show();
+			
+			elem.find('.toolbarLink').fadeIn(200);
+		}
+		
+		if (cecily.currentTiddler && cecily.currentTiddler != title) {
+			
+			// TODO: Only one zoom motion for now until motion is slower and less buggy
+			
+			/*
+			// Create bound rectangle to zoom
+			var bound = $('<div class="bound"/>');
+
+			var bounds = cecily.boundsForTiddlers(elem.add('#tiddler' + cecily.currentTiddler));
+			
+			bound.css(bounds).css('position', 'absolute');
+			
+			$('#display').append(bound);
+			
+			bound.zoomTo({
+				targetsize: 1,
+				duration: 500,
+				easing: 'ease-out',
+				nativeanimation: true
+			});
+			
+			setTimeout(function() {
 				
 				// Zoom to the tiddler
 				elem.zoomTo({
 					targetsize: 0.9,
+					duration: 500,
+					easing: 'ease-in',
+					nativeanimation: true
+				});
+				
+				bound.remove();
+				
+			}, 500);
+			*/
+			
+			// Zoom to the tiddler
+			elem.zoomTo({
+				targetsize: 0.9,
 				duration: 500,
 				easing: 'ease-out',
 				nativeanimation: true
-				});
-			}
+			});
+
+		} else {
 			
-			cecily.currentTiddler = title;
-			
-			if (invis) elem.children('.content').hide().css('opacity', 1).slideDown(200);
-				  
-				  // Reorder view stack
-			cecily.pushTiddlerToFront(title);
+			// Zoom to the tiddler
+			elem.zoomTo({
+				targetsize: 0.9,
+				duration: 500,
+				easing: 'ease-out',
+				nativeanimation: true
+			});
+		}
+		
+		cecily.currentTiddler = title;
+		
+		if (invis) elem.children('.content').hide().css('opacity', 1).slideDown(200);
+				
+				// Reorder view stack
+		cecily.pushTiddlerToFront(title);
 	};
 	
 	// Calculate scale and position of display

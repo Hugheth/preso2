@@ -13,4 +13,4 @@ dist:
 deploy: dist
 	./upload.sh -t preso2package preso2 dist/latest/preso2.js.js
 	./upload.sh -t preso2package preso2 dist/latest/preso2.css
-	./upload.sh -t preso2package preso2 dist/latest/present.tid
+	./upload.sh -t preso2package preso2 src/present-dev.html
